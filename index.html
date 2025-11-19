@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Тренажёр по дробям</title>
+
+  <!-- MathJax для красивых дробей -->
+  <script id="MathJax-script" async
+          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #e0f2fe, #f5f3ff);
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 24px 28px 28px;
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+      max-width: 560px;
+      width: 100%;
+      border: 2px solid #bfdbfe;
+      position: relative;
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 4px;
+      font-size: 22px;
+      text-align: center;
+      color: #1e293b;
+    }
+
+    .subtitle {
+      margin: 0 0 8px;
+      font-size: 14px;
+      color: #64748b;
+      text-align: center;
+    }
+
+    .date {
+      margin: 0 0 14px;
+      font-size: 15px;
+      color: #0f172a;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 500;
+      display: block;
+      margin-bottom: 6px;
+      color: #1f2933;
+    }
+
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #c4d7ff;
+      font-size: 14px;
+      outline: none;
+      background: #f8fafc;
+    }
+
+    select:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.4);
+    }
+
+    .mode-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mode-tag {
+      display: inline-block;
+      margin-top: 2px;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: #e0f2fe;
+      color: #0369a1;
+      white-space: nowrap;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .problem-card {
+      width: 100%;
+      background: #eef2ff;
+      border-radius: 14px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 70px;
+    }
+
+    .problem {
+      font-size: 26px;
+      font-weight: 600;
+      text-align: center;
+      color: #111827;
+    }
+
+    .options {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .option-btn {
+      border: none;
+      border-radius: 14px;
+      padding: 8px 6px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      background: #f1f5f9;
+      color: #0f172a;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+      transition: 0.15s;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .option-btn:hover {
+      background: #e0f2fe;
+      transform: translateY(-1px);
+    }
+
+    .option-btn:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    .status {
+      margin-top: 14px;
+      font-size: 14px;
+      min-height: 20px;
+      text-align: center;
+    }
+
+    .status.ok { color: #16a34a; }
+    .status.error { color: #dc2626; }
+
+    .stats {
+      margin-top: 16px;
+      padding-top: 10px;
+      border-top: 1px dashed #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .bottom-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+      align-items: stretch;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-secondary {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-secondary:active { transform: translateY(1px); }
+
+    .btn-outline {
+      background: #f9fafb;
+      border: 1px solid #d1d5db;
+    }
+
+    .btn-outline:hover {
+      background: #e5e7eb;
+    }
+
+    .hint-card {
+      flex: 1 1 260px;
+      background: #fffbeb;
+      border-radius: 14px;
+      padding: 10px 12px;
+      border: 1px solid #fde68a;
+    }
+
+    .hint-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #92400e;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hint-title span.icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: #fbbf24;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #78350f;
+    }
+
+    .hint-list {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 12px;
+      color: #92400e;
+    }
+
+    .hint-list li {
+      margin-bottom: 2px;
+    }
+
+    /* Карточка примера решения */
+    .demo-card {
+      flex: 1 1 260px;
+      background: #eff6ff;
+      border-radius: 14px;
+      padding: 8px 10px 10px;
+      border: 1px solid #dbeafe;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transform: translateY(10px);
+      transition: max-height 0.3s ease, opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .demo-card.open {
+      max-height: 320px;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .demo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .demo-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1d4ed8;
+    }
+
+    .demo-close {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0 4px;
+      color: #64748b;
+    }
+
+    .demo-expression {
+      font-size: 18px;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    .demo-steps {
+      margin: 0 0 6px;
+      padding-left: 18px;
+      font-size: 12px;
+      color: #1f2937;
+      max-height: 160px;
+      overflow: auto;
+    }
+
+    .demo-step {
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .demo-step.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .btn-secondary.small {
+      font-size: 12px;
+      padding: 4px 10px;
+    }
+
+    .author-tag {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #94a3b8;
+      text-align: right;
+    }
+
+    @media (max-width: 560px) {
+      .container {
+        margin: 12px;
+        padding: 18px;
+      }
+      .problem {
+        font-size: 22px;
+      }
+      .options {
+        grid-template-columns: 1fr;
+      }
+      .bottom-row {
+        flex-direction: column-reverse;
+      }
+      .demo-card.open {
+        max-height: 360px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Тренажёр по дробям</h1>
+  <p class="subtitle">Выбери режим и нажимай на правильный ответ.</p>
+  <p class="date" id="currentDate"></p>
+
+  <div class="mode-row">
+    <div style="flex: 1;">
+      <label for="mode">Режим</label>
+      <select id="mode">
+        <option value="frac-same">1. Дроби с одинаковыми знаменателями</option>
+        <option value="frac-diff">2. Дроби с разными знаменателями</option>
+        <option value="mixed-same">3. Смешанные числа (одинаковые знаменатели)</option>
+        <option value="mixed-diff">4. Смешанные числа (разные знаменатели)</option>
+        <option value="mixed-borrow">5. Одалживание в смешанных числах (вычитание)</option>
+        <option value="improper-to-mixed">6. Неправильная дробь → смешанное число</option>
+        <option value="simplify-frac">7. Сокращение дробей</option>
+      </select>
+    </div>
+    <span class="mode-tag" id="modeTag">Обыкновенные дроби</span>
+  </div>
+
+  <div class="row">
+    <div class="problem-card">
+      <div class="problem" id="problem">—</div>
+    </div>
+  </div>
+
+  <div id="options" class="options"></div>
+
+  <div class="bottom-row">
+    <div class="controls">
+      <button class="btn-secondary" id="newBtn">Новый пример</button>
+      <button class="btn-secondary btn-outline" id="demoBtn">Пример решения</button>
+    </div>
+
+    <div class="hint-card">
+      <div class="hint-title">
+        <span class="icon">?</span>
+        <span id="hintTitle">Подсказка по задаче</span>
+      </div>
+      <ul class="hint-list" id="hintList"></ul>
+    </div>
+
+    <div class="demo-card" id="demoCard">
+      <div class="demo-header">
+        <span class="demo-title" id="demoTitle">Пример решения</span>
+        <button class="demo-close" id="closeDemo" title="Закрыть">×</button>
+      </div>
+      <div class="demo-expression" id="demoExpression"></div>
+      <ol class="demo-steps" id="demoSteps"></ol>
+      <button class="btn-secondary small" id="nextStepBtn">Следующий шаг</button>
+    </div>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="stats">
+    <div>Верно: <span id="correct">0</span></div>
+    <div>Всего: <span id="total">0</span></div>
+    <div>Точность: <span id="accuracy">0%</span></div>
+  </div>
+
+  <div class="author-tag">Создатель: Овэс Иван Иванович</div>
+</div>
+
+<script>
+  // ---------- КОНСТАНТЫ ДЛЯ ДИАПАЗОНОВ ----------
+  const DEN_MIN = 2;
+  const DEN_MAX = 20;   // знаменатели 2–20 (однозначные и двузначные)
+  const WHOLE_MIN = 1;
+  const WHOLE_MAX = 19; // целые части 1–19 (однозначные и двузначные)
+
+  // ---------- ДАТА ----------
+  function updateDate() {
+    const dateEl = document.getElementById('currentDate');
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    dateEl.textContent = `Дата: ${day}.${month}.${year}`;
+  }
+  updateDate();
+
+  // ---------- МАТЕМАТИКА ----------
+  function gcd(a, b) {
+    a = Math.abs(a);
+    b = Math.abs(b);
+    while (b !== 0) {
+      const t = b;
+      b = a % b;
+      a = t;
+    }
+    return a || 1;
+  }
+
+  function lcm(a, b) {
+    return Math.abs(a * b) / gcd(a, b);
+  }
+
+  function simplifyFraction(fr) {
+    if (fr.den < 0) {
+      fr.num = -fr.num;
+      fr.den = -fr.den;
+    }
+    if (fr.num === 0) {
+      return { num: 0, den: 1 };
+    }
+    const g = gcd(fr.num, fr.den);
+    return { num: fr.num / g, den: fr.den / g };
+  }
+
+  function addOrSub(fr1, fr2, op) {
+    const commonDen = lcm(fr1.den, fr2.den);
+    const n1 = fr1.num * (commonDen / fr1.den);
+    const n2 = fr2.num * (commonDen / fr2.den);
+    const num = op === '+' ? (n1 + n2) : (n1 - n2);
+    return simplifyFraction({ num, den: commonDen });
+  }
+
+  function formatFractionSimple(fr) {
+    const num = fr.num;
+    const den = fr.den;
+    if (den === 1) return String(num);
+
+    const sign = num < 0 ? '-' : '';
+    const absNum = Math.abs(num);
+    return sign + `\\frac{${absNum}}{${den}}`;
+  }
+
+  function formatFractionMixed(fr) {
+    const num = fr.num;
+    const den = fr.den;
+
+    if (num === 0) return '0';
+
+    const sign = num < 0 ? '-' : '';
+    const absNum = Math.abs(num);
+    const whole = Math.floor(absNum / den);
+    const rest = absNum % den;
+
+    if (whole === 0) {
+      return sign + `\\frac{${rest}}{${den}}`;
+    }
+    if (rest === 0) {
+      return sign + whole;
+    }
+    return sign + whole + `\\frac{${rest}}{${den}}`;
+  }
+
+  function formatFraction(fr, asMixed) {
+    return asMixed ? formatFractionMixed(fr) : formatFractionSimple(fr);
+  }
+
+  // ---------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ----------
+  const modeSelect   = document.getElementById('mode');
+  const modeTag      = document.getElementById('modeTag');
+  const problemEl    = document.getElementById('problem');
+  const statusEl     = document.getElementById('status');
+  const correctEl    = document.getElementById('correct');
+  const totalEl      = document.getElementById('total');
+  const accuracyEl   = document.getElementById('accuracy');
+  const newBtn       = document.getElementById('newBtn');
+  const demoBtn      = document.getElementById('demoBtn');
+  const optionsContainer = document.getElementById('options');
+
+  const hintTitleEl  = document.getElementById('hintTitle');
+  const hintListEl   = document.getElementById('hintList');
+
+  const demoCard     = document.getElementById('demoCard');
+  const closeDemoBtn = document.getElementById('closeDemo');
+  const demoExpressionEl = document.getElementById('demoExpression');
+  const demoStepsEl  = document.getElementById('demoSteps');
+  const nextStepBtn  = document.getElementById('nextStepBtn');
+
+  let currentAnswer = null;         // {num, den}
+  let currentAnswerKey = '';        // "num/den"
+  let asMixedAnswer = false;
+  let correctCount = 0;
+  let totalCount = 0;
+  let lock = false;
+
+  // Для примеров решения
+  let currentDemoMode = null;
+  let currentDemoIndex = 0;
+
+  function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function fractionKey(fr) {
+    return `${fr.num}/${fr.den}`;
+  }
+
+  // ---------- ПОДСКАЗКИ ДЛЯ РЕЖИМОВ ----------
+  const hints = {
+    'frac-same': {
+      title: 'Алгоритм: дроби с одинаковыми знаменателями',
+      steps: [
+        '1. Знаменатели одинаковые — работаем только с числителями.',
+        '2. Выполни действие с числителями (сложение или вычитание).',
+        '3. Знаменатель оставь тем же.',
+        '4. Если можно, сократи дробь или выдели целую часть.',
+        '5. Аккуратно перепиши конечный ответ.'
+      ]
+    },
+    'frac-diff': {
+      title: 'Алгоритм: дроби с разными знаменателями',
+      steps: [
+        '1. Найди общий знаменатель (удобное общее число).',
+        '2. Приведи обе дроби к общему знаменателю.',
+        '3. Выполни действие с числителями.',
+        '4. Сократи дробь, если есть общий делитель.',
+        '5. Если числитель больше знаменателя — выдели целую часть.'
+      ]
+    },
+    'mixed-same': {
+      title: 'Алгоритм: смешанные числа (одинаковые знаменатели)',
+      steps: [
+        '1. Отдельно посчитай целые части.',
+        '2. Отдельно посчитай дробные части (знаменатель общий).',
+        '3. Если в дробной части числитель ≥ знаменателя — выдели целую.',
+        '4. Объедини целую и дробную части.',
+        '5. Проверь, можно ли дробную часть сократить.'
+      ]
+    },
+    'mixed-diff': {
+      title: 'Алгоритм: смешанные числа (разные знаменатели)',
+      steps: [
+        '1. Переведи смешанные числа в неправильные дроби.',
+        '2. Найди общий знаменатель.',
+        '3. Приведи дроби к общему знаменателю.',
+        '4. Выполни действие с числителями.',
+        '5. Переведи результат обратно в смешанное число и сократи дробь.'
+      ]
+    },
+    'mixed-borrow': {
+      title: 'Алгоритм: одалживание в смешанных числах',
+      steps: [
+        '1. Посмотри на дробные части: у уменьшаемого дробь меньше.',
+        '2. Займи 1 у целой части уменьшаемого и добавь знаменатель к числителю.',
+        '3. Вычти дробные части.',
+        '4. Вычти целые части (учитывая, что одну единицу уже заняли).',
+        '5. Если возможно, сократи дробную часть в ответе.'
+      ]
+    },
+    'improper-to-mixed': {
+      title: 'Алгоритм: неправильная дробь → смешанное число',
+      steps: [
+        '1. Раздели числитель на знаменатель.',
+        '2. Целая часть — это результат деления.',
+        '3. Остаток — это новый числитель, знаменатель остаётся прежним.',
+        '4. Если дробь можно сократить — сократи её.',
+        '5. Запиши ответ в виде смешанного числа.'
+      ]
+    },
+    'simplify-frac': {
+      title: 'Алгоритм: сокращение дробей',
+      steps: [
+        '1. Найди общий делитель числителя и знаменателя.',
+        '2. Раздели числитель и знаменатель на этот делитель.',
+        '3. Проверь, можно ли сократить ещё раз.',
+        '4. Повторяй, пока нет общих делителей кроме 1.',
+        '5. Получившуюся дробь запиши как окончательный ответ.'
+      ]
+    }
+  };
+
+  function updateHint(mode) {
+    const h = hints[mode] || hints['frac-same'];
+    hintTitleEl.textContent = h.title;
+    hintListEl.innerHTML = '';
+    h.steps.forEach(text => {
+      const li = document.createElement('li');
+      li.textContent = text;
+      hintListEl.appendChild(li);
+    });
+  }
+
+  // ---------- ПРИМЕРЫ РЕШЕНИЙ (ПОДРОБНЫЕ) ----------
+  const demoExamples = {
+    'frac-same': {
+      title: 'Пример: одинаковые знаменатели',
+      expression: '\\frac{7}{12} + \\frac{3}{12}',
+      steps: [
+        '1. Записываем пример: $$\\frac{7}{12} + \\frac{3}{12}$$',
+        '2. Знаменатели одинаковые (12), значит складываем только числители: $$7 + 3 = 10.$$', 
+        '3. Знаменатель оставляем тем же: $$\\frac{10}{12}$$.',
+        '4. Сократим дробь. Наибольший общий делитель 10 и 12 — это 2.',
+        '5. Делим числитель и знаменатель на 2: $$\\frac{10 : 2}{12 : 2} = \\frac{5}{6}.$$', 
+        '6. Окончательный ответ: $$\\frac{7}{12} + \\frac{3}{12} = \\frac{5}{6}.$$'
+      ]
+    },
+    'frac-diff': {
+      title: 'Пример: разные знаменатели',
+      expression: '\\frac{5}{8} - \\frac{3}{20}',
+      steps: [
+        '1. Записываем пример: $$\\frac{5}{8} - \\frac{3}{20}$$',
+        '2. Ищем общий знаменатель для 8 и 20. Удобно взять 40.',
+        '3. Приводим первую дробь: $$\\frac{5}{8} = \\frac{5 \\cdot 5}{8 \\cdot 5} = \\frac{25}{40}.$$',
+        '4. Приводим вторую дробь: $$\\frac{3}{20} = \\frac{3 \\cdot 2}{20 \\cdot 2} = \\frac{6}{40}.$$',
+        '5. Вычитаем: $$\\frac{25}{40} - \\frac{6}{40} = \\frac{19}{40}.$$', 
+        '6. Дробь \\(\\frac{19}{40}\\) сократить нельзя, это окончательный ответ.',
+        '7. Итак: $$\\frac{5}{8} - \\frac{3}{20} = \\frac{19}{40}.$$'
+      ]
+    },
+    'mixed-same': {
+      title: 'Пример: смешанные, одинаковые знаменатели',
+      expression: '7\\frac{3}{10} + 5\\frac{4}{10}',
+      steps: [
+        '1. Записываем пример: $$7\\frac{3}{10} + 5\\frac{4}{10}$$',
+        '2. Складываем целые части: $$7 + 5 = 12.$$',
+        '3. Складываем дробные части: $$\\frac{3}{10} + \\frac{4}{10} = \\frac{7}{10}.$$',
+        '4. Объединяем результат: $$12\\frac{7}{10}.$$', 
+        '5. Дробь \\(\\frac{7}{10}\\) сократить нельзя.',
+        '6. Окончательный ответ: $$7\\frac{3}{10} + 5\\frac{4}{10} = 12\\frac{7}{10}.$$'
+      ]
+    },
+    'mixed-diff': {
+      title: 'Пример: смешанные, разные знаменатели',
+      expression: '9\\frac{1}{6} - 4\\frac{3}{4}',
+      steps: [
+        '1. Записываем пример: $$9\\frac{1}{6} - 4\\frac{3}{4}$$',
+        '2. Переводим в неправильные дроби: $$9\\frac{1}{6} = \\frac{9 \\cdot 6 + 1}{6} = \\frac{55}{6}.$$',
+        '3. Вторая дробь: $$4\\frac{3}{4} = \\frac{4 \\cdot 4 + 3}{4} = \\frac{19}{4}.$$',
+        '4. Ищем общий знаменатель для 6 и 4: удобно взять 12.',
+        '5. Приводим дроби: $$\\frac{55}{6} = \\frac{55 \\cdot 2}{6 \\cdot 2} = \\frac{110}{12}, \\quad \\frac{19}{4} = \\frac{19 \\cdot 3}{4 \\cdot 3} = \\frac{57}{12}.$$',
+        '6. Вычитаем: $$\\frac{110}{12} - \\frac{57}{12} = \\frac{53}{12}.$$',
+        '7. Выделяем целую часть: $$\\frac{53}{12} = 4\\frac{5}{12}$$ (так как 53 : 12 = 4, остаток 5).',
+        '8. Дробь \\(\\frac{5}{12}\\) сократить нельзя.',
+        '9. Окончательный ответ: $$9\\frac{1}{6} - 4\\frac{3}{4} = 4\\frac{5}{12}.$$'
+      ]
+    },
+    'mixed-borrow': {
+      title: 'Пример: одалживание в смешанных числах',
+      expression: '11\\frac{2}{9} - 6\\frac{7}{9}',
+      steps: [
+        '1. Записываем пример: $$11\\frac{2}{9} - 6\\frac{7}{9}$$',
+        '2. Сравниваем дробные части: $$\\frac{2}{9} < \\frac{7}{9}$$, значит нужно занять 1 у целой части 11.',
+        '3. Займ: $$11\\frac{2}{9} = 10 + 1\\frac{2}{9} = 10 + \\frac{2}{9} + \\frac{9}{9} = 10\\frac{11}{9}.$$', 
+        '4. Теперь считаем: $$10\\frac{11}{9} - 6\\frac{7}{9}.$$', 
+        '5. Вычитаем целые части: $$10 - 6 = 4.$$', 
+        '6. Вычитаем дробные части: $$\\frac{11}{9} - \\frac{7}{9} = \\frac{4}{9}.$$', 
+        '7. Объединяем: получаем $$4\\frac{4}{9}.$$', 
+        '8. Дробь \\(\\frac{4}{9}\\) сократить нельзя.',
+        '9. Окончательный ответ: $$11\\frac{2}{9} - 6\\frac{7}{9} = 4\\frac{4}{9}.$$'
+      ]
+    },
+    'improper-to-mixed': {
+      title: 'Пример: неправильная → смешанная',
+      expression: '\\frac{73}{12}',
+      steps: [
+        '1. Дана неправильная дробь: $$\\frac{73}{12}.$$',
+        '2. Делим 73 на 12: $$73 : 12 = 6$$ (целых), остаток $$73 - 6 \\cdot 12 = 73 - 72 = 1.$$', 
+        '3. Целая часть будущего смешанного числа — 6.',
+        '4. Остаток 1 записываем в числитель, знаменатель остаётся 12: $$6\\frac{1}{12}.$$',
+        '5. Дробь \\(\\frac{1}{12}\\) сократить нельзя.',
+        '6. Окончательный ответ: $$\\frac{73}{12} = 6\\frac{1}{12}.$$'
+      ]
+    },
+    'simplify-frac': {
+      title: 'Пример: сокращение дроби',
+      expression: '\\frac{42}{63}',
+      steps: [
+        '1. Дана дробь: $$\\frac{42}{63}.$$',
+        '2. Ищем общий делитель 42 и 63. Можно заметить, что оба делятся на 7.',
+        '3. Делим числитель и знаменатель на 7: $$\\frac{42 : 7}{63 : 7} = \\frac{6}{9}.$$',
+        '4. Проверяем дробь \\(\\frac{6}{9}\\): 6 и 9 делятся на 3.',
+        '5. Ещё раз сокращаем: $$\\frac{6 : 3}{9 : 3} = \\frac{2}{3}.$$',
+        '6. Теперь 2 и 3 уже не имеют общих делителей, кроме 1.',
+        '7. Окончательный ответ: $$\\frac{42}{63} = \\frac{2}{3}.$$'
+      ]
+    }
+  };
+
+  // ---------- ГЕНЕРАТОРЫ ЗАДАЧ ----------
+
+  function generateFracSame() {
+    const den = getRandomInt(DEN_MIN, DEN_MAX);
+    let n1 = getRandomInt(1, den - 1);
+    let n2 = getRandomInt(1, den - 1);
+    const op = Math.random() < 0.5 ? '+' : '-';
+
+    if (op === '-' && n1 < n2) {
+      [n1, n2] = [n2, n1];
+    }
+
+    const f1 = { num: n1, den };
+    const f2 = { num: n2, den };
+    const result = addOrSub(f1, f2, op);
+
+    const tex = `\\frac{${n1}}{${den}} ${op} \\frac{${n2}}{${den}}`;
+    return { tex, result, mixed: false };
+  }
+
+  function generateFracDiff() {
+    let d1 = getRandomInt(DEN_MIN, DEN_MAX);
+    let d2 = getRandomInt(DEN_MIN, DEN_MAX);
+    while (d2 === d1) {
+      d2 = getRandomInt(DEN_MIN, DEN_MAX);
+    }
+
+    let n1 = getRandomInt(1, d1 - 1);
+    let n2 = getRandomInt(1, d2 - 1);
+    const op = Math.random() < 0.5 ? '+' : '-';
+
+    if (op === '-' && n1 * d2 < n2 * d1) {
+      [n1, n2] = [n2, n1];
+      [d1, d2] = [d2, d1];
+    }
+
+    const f1 = { num: n1, den: d1 };
+    const f2 = { num: n2, den: d2 };
+    const result = addOrSub(f1, f2, op);
+
+    const tex = `\\frac{${n1}}{${d1}} ${op} \\frac{${n2}}{${d2}}`;
+    return { tex, result, mixed: false };
+  }
+
+  function generateMixedSame() {
+    const den = getRandomInt(DEN_MIN, DEN_MAX);
+    let w1 = getRandomInt(WHOLE_MIN, WHOLE_MAX);
+    let w2 = getRandomInt(WHOLE_MIN, WHOLE_MAX);
+    let n1 = getRandomInt(1, den - 1);
+    let n2 = getRandomInt(1, den - 1);
+    const op = Math.random() < 0.5 ? '+' : '-';
+
+    const t1 = w1 * den + n1;
+    const t2 = w2 * den + n2;
+
+    if (op === '-' && t1 < t2) {
+      [w1, w2] = [w2, w1];
+      [n1, n2] = [n2, n1];
+    }
+
+    const f1 = { num: w1 * den + n1, den };
+    const f2 = { num: w2 * den + n2, den };
+    const result = addOrSub(f1, f2, op);
+
+    const tex = `${w1}\\frac{${n1}}{${den}} ${op} ${w2}\\frac{${n2}}{${den}}`;
+    return { tex, result, mixed: true };
+  }
+
+  function generateMixedDiff() {
+    let d1 = getRandomInt(DEN_MIN, DEN_MAX);
+    let d2 = getRandomInt(DEN_MIN, DEN_MAX);
+    while (d2 === d1) {
+      d2 = getRandomInt(DEN_MIN, DEN_MAX);
+    }
+
+    let w1 = getRandomInt(WHOLE_MIN, WHOLE_MAX);
+    let w2 = getRandomInt(WHOLE_MIN, WHOLE_MAX);
+    let n1 = getRandomInt(1, d1 - 1);
+    let n2 = getRandomInt(1, d2 - 1);
+    const op = Math.random() < 0.5 ? '+' : '-';
+
+    const t1 = w1 * d1 + n1;
+    const t2 = w2 * d2 + n2;
+
+    if (op === '-' && t1 * d2 < t2 * d1) {
+      [w1, w2] = [w2, w1];
+      [n1, n2] = [n2, n1];
+      [d1, d2] = [d2, d1];
+    }
+
+    const f1 = { num: w1 * d1 + n1, den: d1 };
+    const f2 = { num: w2 * d2 + n2, den: d2 };
+    const result = addOrSub(f1, f2, op);
+
+    const tex = `${w1}\\frac{${n1}}{${d1}} ${op} ${w2}\\frac{${n2}}{${d2}}`;
+    return { tex, result, mixed: true };
+  }
+
+  function generateMixedBorrow() {
+    const den = getRandomInt(DEN_MIN, DEN_MAX);
+
+    let w1 = getRandomInt(Math.max(WHOLE_MIN + 1, 2), WHOLE_MAX);
+    let w2 = getRandomInt(0, w1 - 1);
+
+    let n1 = getRandomInt(1, den - 2);
+    let n2 = getRandomInt(n1 + 1, den - 1);
+
+    const f1 = { num: w1 * den + n1, den };
+    const f2 = { num: w2 * den + n2, den };
+    const result = addOrSub(f1, f2, '-');
+
+    const tex = `${w1}\\frac{${n1}}{${den}} - ${w2}\\frac{${n2}}{${den}}`;
+    return { tex, result, mixed: true };
+  }
+
+  function generateImproperToMixed() {
+    const den = getRandomInt(DEN_MIN, DEN_MAX);
+    let num = getRandomInt(11, 99);
+    while (num <= den) {
+      num = getRandomInt(11, 99);
+    }
+    const fr = simplifyFraction({ num, den });
+    const tex = `\\frac{${num}}{${den}}`;
+    return { tex, result: fr, mixed: true };
+  }
+
+  function generateSimplifyFrac() {
+    let baseDen = getRandomInt(DEN_MIN, DEN_MAX);
+    let baseNum = getRandomInt(1, baseDen - 1);
+    while (gcd(baseNum, baseDen) !== 1) {
+      baseDen = getRandomInt(DEN_MIN, DEN_MAX);
+      baseNum = getRandomInt(1, baseDen - 1);
+    }
+    let factor;
+    while (true) {
+      factor = getRandomInt(2, 5); // чуть побольше, но контролируем
+      if (baseNum * factor <= 99 && baseDen * factor <= 99) break;
+    }
+    const num = baseNum * factor;
+    const den = baseDen * factor;
+
+    const fr = simplifyFraction({ num, den });
+    const tex = `\\frac{${num}}{${den}}`;
+    return { tex, result: fr, mixed: false };
+  }
+
+  // ---------- НЕПРАВИЛЬНЫЕ ОТВЕТЫ ----------
+  function generateWrongAnswers(correct, count) {
+    const wrongs = [];
+    const correctKey = fractionKey(correct);
+
+    while (wrongs.length < count) {
+      let candidate = { num: correct.num, den: correct.den };
+
+      if (candidate.den === 1) {
+        let delta = getRandomInt(1, 9);
+        if (Math.random() < 0.5) delta = -delta;
+        candidate.num += delta;
+        if (candidate.num < 0) candidate.num = -candidate.num;
+      } else {
+        if (Math.random() < 0.5) {
+          let delta = getRandomInt(1, 5);
+          if (Math.random() < 0.5) delta = -delta;
+          candidate.num += delta;
+          if (candidate.num <= 0) candidate.num = 1;
+          if (candidate.num >= 100) candidate.num = 99;
+        } else {
+          let delta = getRandomInt(1, 5);
+          if (Math.random() < 0.5) delta = -delta;
+          candidate.den += delta;
+          if (candidate.den < DEN_MIN) candidate.den = DEN_MIN;
+          if (candidate.den > DEN_MAX) candidate.den = DEN_MAX;
+        }
+      }
+
+      candidate = simplifyFraction(candidate);
+      const key = fractionKey(candidate);
+      if (key === correctKey) continue;
+      if (wrongs.some(fr => fractionKey(fr) === key)) continue;
+
+      wrongs.push(candidate);
+    }
+    return wrongs;
+  }
+
+  // ---------- ОТОБРАЖЕНИЕ ----------
+  function renderMath() {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      MathJax.typesetPromise();
+    }
+  }
+
+  function generateProblem() {
+    lock = false;
+    statusEl.textContent = '';
+    statusEl.className = 'status';
+
+    const mode = modeSelect.value;
+    let data;
+
+    if (mode === 'frac-same') {
+      modeTag.textContent = 'Дроби: одинаковые знаменатели';
+      data = generateFracSame();
+    } else if (mode === 'frac-diff') {
+      modeTag.textContent = 'Дроби: разные знаменатели';
+      data = generateFracDiff();
+    } else if (mode === 'mixed-same') {
+      modeTag.textContent = 'Смешанные числа: одинаковые знаменатели';
+      data = generateMixedSame();
+    } else if (mode === 'mixed-diff') {
+      modeTag.textContent = 'Смешанные числа: разные знаменатели';
+      data = generateMixedDiff();
+    } else if (mode === 'mixed-borrow') {
+      modeTag.textContent = 'Одалживание в смешанных числах';
+      data = generateMixedBorrow();
+    } else if (mode === 'improper-to-mixed') {
+      modeTag.textContent = 'Неправильная дробь → смешанное число';
+      data = generateImproperToMixed();
+    } else {
+      modeTag.textContent = 'Сокращение дробей';
+      data = generateSimplifyFrac();
+    }
+
+    currentAnswer = data.result;
+    asMixedAnswer = data.mixed;
+    currentAnswerKey = fractionKey(currentAnswer);
+
+    problemEl.innerHTML = '$$' + data.tex + '$$';
+
+    const wrongs = generateWrongAnswers(currentAnswer, 3);
+    const options = [currentAnswer, ...wrongs];
+    shuffleArray(options);
+
+    optionsContainer.innerHTML = '';
+    options.forEach(fr => {
+      const key = fractionKey(fr);
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      const tex = formatFraction(fr, asMixedAnswer);
+      btn.innerHTML = '$$' + tex + '$$';
+      btn.addEventListener('click', () => handleAnswerClick(key));
+      optionsContainer.appendChild(btn);
+    });
+
+    updateHint(mode);
+    renderMath();
+  }
+
+  function updateStats() {
+    correctEl.textContent = correctCount;
+    totalEl.textContent = totalCount;
+    const acc = totalCount === 0 ? 0 : Math.round((correctCount / totalCount) * 100);
+    accuracyEl.textContent = acc + '%';
+  }
+
+  function handleAnswerClick(selectedKey) {
+    if (lock) return;
+    lock = true;
+
+    totalCount++;
+    if (selectedKey === currentAnswerKey) {
+      correctCount++;
+      statusEl.textContent = 'Верно! Молодец 👍';
+      statusEl.className = 'status ok';
+    } else {
+      statusEl.textContent = 'Неверно. Правильный ответ: ' +
+        '$$' + formatFraction(currentAnswer, asMixedAnswer) + '$$';
+      statusEl.className = 'status error';
+      renderMath();
+    }
+
+    updateStats();
+    setTimeout(generateProblem, 900);
+  }
+
+  // ---------- ПРИМЕР РЕШЕНИЯ (ДЕМО) ----------
+  function openDemoForCurrentMode() {
+    const mode = modeSelect.value;
+    const ex = demoExamples[mode];
+    if (!ex) return;
+
+    currentDemoMode = mode;
+    currentDemoIndex = 0;
+
+    demoCard.classList.add('open');
+    document.getElementById('demoTitle').textContent = ex.title;
+    demoExpressionEl.innerHTML = '$$' + ex.expression + '$$';
+    demoStepsEl.innerHTML = '';
+    nextStepBtn.disabled = false;
+    nextStepBtn.textContent = 'Следующий шаг';
+
+    renderMath();
+  }
+
+  function closeDemo() {
+    demoCard.classList.remove('open');
+  }
+
+  function showNextDemoStep() {
+    if (!currentDemoMode) return;
+    const ex = demoExamples[currentDemoMode];
+    if (!ex) return;
+
+    if (currentDemoIndex >= ex.steps.length) {
+      nextStepBtn.textContent = 'Все шаги показаны';
+      nextStepBtn.disabled = true;
+      return;
+    }
+
+    const text = ex.steps[currentDemoIndex];
+    const li = document.createElement('li');
+    li.className = 'demo-step';
+    li.innerHTML = text;
+    demoStepsEl.appendChild(li);
+
+    requestAnimationFrame(() => {
+      li.classList.add('show');
+    });
+
+    currentDemoIndex++;
+    renderMath();
+
+    if (currentDemoIndex >= ex.steps.length) {
+      nextStepBtn.textContent = 'Все шаги показаны';
+    }
+  }
+
+  // ---------- СЛУШАТЕЛИ ----------
+  newBtn.addEventListener('click', generateProblem);
+  modeSelect.addEventListener('change', () => {
+    generateProblem();
+    if (demoCard.classList.contains('open')) {
+      openDemoForCurrentMode();
+    }
+  });
+
+  demoBtn.addEventListener('click', () => {
+    if (!demoCard.classList.contains('open')) {
+      openDemoForCurrentMode();
+    } else {
+      openDemoForCurrentMode();
+    }
+  });
+
+  closeDemoBtn.addEventListener('click', closeDemo);
+  nextStepBtn.addEventListener('click', showNextDemoStep);
+
+  window.addEventListener('load', () => {
+    updateHint(modeSelect.value);
+    generateProblem();
+  });
+</script>
+</body>
+</html>
