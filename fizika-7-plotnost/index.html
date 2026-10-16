@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Виртуальная лабораторная работа №3 — Плотность</title>
+<style>
+:root{--ink:#203044;--muted:#617286;--line:#d8e1eb;--blue:#2378d4;--pale:#f3f7fb;--green:#16865b;--orange:#d97706}
+*{box-sizing:border-box}body{margin:0;background:#edf2f7;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+header{padding:16px 22px;background:#fff;border-bottom:1px solid var(--line)}
+header h1{font-size:clamp(20px,2.3vw,29px);margin:0 0 5px}header p{margin:0;color:var(--muted);font-size:14px}
+.app{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(330px,1fr);gap:14px;padding:14px;max-width:1600px;margin:auto}
+.panel{background:white;border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 16px #24364a0a;overflow:hidden}
+.panelhead{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.panelhead h2{font-size:17px;margin:0}.hint{font-size:12px;color:var(--muted)}
+.stage{padding:10px;background:linear-gradient(#f8fbff,#eef4fa)}canvas{display:block;width:100%;height:auto;touch-action:none;border-radius:10px;background:#f7fbff}
+.legend{display:flex;flex-wrap:wrap;gap:8px;padding:9px 14px;font-size:12px;color:var(--muted)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
+.controls{padding:14px;display:flex;flex-direction:column;gap:12px}
+.section{border:1px solid var(--line);border-radius:12px;padding:12px}
+.section h3{font-size:14px;margin:0 0 9px}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+button,select,input{font:inherit}
+button{border:0;border-radius:9px;padding:10px 12px;background:var(--blue);color:white;cursor:pointer;font-weight:700}
+button.secondary{background:#e8eff7;color:#29445f}button.green{background:var(--green)}button.orange{background:var(--orange)}button:focus-visible,select:focus-visible{outline:3px solid #8fc4ff;outline-offset:2px}
+select{padding:9px;border:1px solid var(--line);border-radius:8px;background:white;color:var(--ink);max-width:100%}
+.readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.readout{background:var(--pale);border-radius:10px;padding:10px;min-width:0}
+.readout .label{font-size:11px;color:var(--muted);margin-bottom:5px}.readout strong{font-size:clamp(17px,2vw,24px);display:block;overflow-wrap:anywhere}.unit{font-size:12px;color:var(--muted)}
+.steps{font-size:13px;line-height:1.5;margin:0;padding-left:20px}.steps li{margin:3px 0}
+.formula{background:#eef7ff;border-radius:9px;padding:10px;font-size:14px;line-height:1.6}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}th,td{border:1px solid var(--line);padding:7px;text-align:center}th{background:#f2f6fa}
+input[type=text]{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px}
+textarea{width:100%;min-height:65px;padding:9px;border:1px solid var(--line);border-radius:8px;resize:vertical;font:inherit}
+.status{font-size:13px;color:var(--muted);line-height:1.4;min-height:18px}.tag{font-size:11px;padding:4px 7px;border-radius:99px;background:#e9f7ef;color:#14734e}
+.small{font-size:12px;color:var(--muted);line-height:1.45}
+@media(max-width:900px){.app{grid-template-columns:1fr}.readouts{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.app{padding:8px}.controls{padding:9px}.readouts{grid-template-columns:1fr 1fr}.readout:last-child{grid-column:span 2}}
+@media print{body{background:white}.app{display:block}.panel{box-shadow:none;margin-bottom:10px}button{display:none}}
+</style>
+</head>
+<body>
+<header>
+<h1>Лабораторная работа № 3. Определение плотности жидкостей и твёрдых тел</h1>
+<p>Физика, 7 класс · Цели обучения: 7.2.2.14 — экспериментально определять плотности жидкостей и твёрдых тел; 7.1.3.3 — знать и соблюдать технику безопасности в кабинете физики.</p>
+</header>
+<main class="app">
+<section class="panel">
+ <div class="panelhead"><h2>Виртуальный лабораторный стол</h2><span class="tag">Перетаскивайте предметы</span></div>
+ <div class="stage"><canvas id="lab" width="900" height="620" aria-label="Интерактивный лабораторный стол"></canvas></div>
+ <div class="legend"><span><i class="dot" style="background:#c5d4e3"></i>Оборудование</span><span><i class="dot" style="background:#2b91d9"></i>Вода</span><span><i class="dot" style="background:#e1a04b"></i>Исследуемая жидкость</span><span>Подсказка: перетащите тело на весы или в мензурку.</span></div>
+</section>
+<section class="panel">
+ <div class="panelhead"><h2>Управление и результаты</h2><span class="hint">Модель измерений</span></div>
+ <div class="controls">
+  <div class="section">
+   <h3>1. Выберите исследуемый объект</h3>
+   <div class="row"><select id="objectSelect" aria-label="Выбор тела">
+    <option value="block">Прямоугольный брусок</option><option value="cylinder">Металлический цилиндр</option><option value="stone">Неправильный камень</option>
+   </select><button id="reset" class="secondary">Сбросить опыт</button></div>
+   <p class="small">Перетащите выбранное тело на электронные весы, чтобы измерить массу. Затем перенесите его в мензурку, чтобы определить объём по изменению уровня воды.</p>
+  </div>
+  <div class="section">
+   <h3>2. Табло приборов</h3>
+   <div class="readouts">
+    <div class="readout"><div class="label">Масса тела m</div><strong id="massDisplay">0.00</strong><span class="unit">г</span></div>
+    <div class="readout"><div class="label">Объём тела V</div><strong id="volumeDisplay">—</strong><span class="unit">мл (см³)</span></div>
+    <div class="readout"><div class="label">Плотность ρ</div><strong id="densityDisplay">—</strong><span class="unit">г/см³</span></div>
+   </div>
+   <div class="row" style="margin-top:10px"><button id="weigh">Поставить на весы</button><button id="immerse" class="green">Погрузить в воду</button><button id="remove" class="secondary">Убрать тело</button></div>
+   <p id="status" class="status" aria-live="polite">Выберите тело и начните измерения.</p>
+  </div>
+  <div class="section">
+   <h3>3. Определение плотности жидкости</h3>
+   <div class="row"><select id="liquidSelect" aria-label="Выбор жидкости"><option value="water">Вода</option><option value="oil">Масло (неизвестная жидкость)</option></select><button id="measureLiquid" class="orange">Измерить жидкость</button></div>
+   <div class="readouts" style="margin-top:9px">
+    <div class="readout"><div class="label">Масса жидкости</div><strong id="lmass">—</strong><span class="unit">г</span></div>
+    <div class="readout"><div class="label">Объём жидкости</div><strong id="lvol">50</strong><span class="unit">мл</span></div>
+    <div class="readout"><div class="label">Плотность жидкости</div><strong id="ldensity">—</strong><span class="unit">г/см³</span></div>
+   </div>
+   <p class="small">В модели объём жидкости равен 50 мл. Нажмите кнопку, чтобы смоделировать взвешивание пустой и заполненной мензурки.</p>
+  </div>
+  <div class="section">
+   <h3>4. Запишите результаты опыта</h3>
+   <table><thead><tr><th>Объект</th><th>m, г</th><th>V, см³</th><th>ρ, г/см³</th></tr></thead><tbody id="resultsRows"><tr><td colspan="4">Пока нет измерений</td></tr></tbody></table>
+   <div class="row" style="margin-top:9px"><button id="saveResult" class="secondary">Добавить результат в таблицу</button><button id="download" class="secondary">Скачать CSV</button></div>
+  </div>
+  <div class="section">
+   <h3>5. Формула и ход работы</h3>
+   <div class="formula"><b>Плотность:</b> ρ = m / V<br><b>Объём тела:</b> V = V₂ − V₁<br>Для жидкости: ρ = m<sub>ж</sub> / V<sub>ж</sub><br><span class="small">1 мл = 1 см³. Плотность в г/см³ численно равна плотности в г/мл.</span></div>
+   <ol class="steps"><li>Соблюдайте правила безопасности: не толкайте оборудование, не пробуйте жидкости на вкус, сообщайте учителю о повреждениях.</li><li>Выберите тело и измерьте его массу на весах.</li><li>Считайте начальный уровень воды: V₁ = 50 мл.</li><li>Погрузите тело полностью, не касаясь дна, и считайте V₂.</li><li>Найдите V = V₂ − V₁, затем вычислите ρ = m/V.</li><li>Для жидкости измерьте её массу и объём, вычислите плотность.</li></ol>
+  </div>
+  <div class="section">
+   <h3>6. Вывод ученика</h3>
+   <textarea id="conclusion" placeholder="Я определил(а) плотность ... Масса равна ..., объём равен ..., поэтому плотность ..."></textarea>
+   <div class="row" style="margin-top:8px"><button id="print" class="secondary">Печать отчёта</button></div>
+  </div>
+ </div>
+</section>
+</main>
+<script>
+(() => {
+const canvas=document.getElementById('lab'),ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id);
+const objects={
+ block:{name:'Прямоугольный брусок',mass:54,volume:20,color:'#c77d42',shape:'block'},
+ cylinder:{name:'Металлический цилиндр',mass:157,volume:20,color:'#9aa8b7',shape:'cylinder'},
+ stone:{name:'Неправильный камень',mass:72,volume:27,color:'#6f7b82',shape:'stone'}
+};
+let selected='block', weighed=false, immersed=false, measuredLiquid=false, saved=[], drag=null;
+const pos={block:{x:215,y:255},cylinder:{x:350,y:260},stone:{x:475,y:258}};
+const scale={x:120,y:390,w:205,h:115}, cyl={x:570,y:190,w:145,h:300};
+const baseLevel=50;
+function text(t,x,y,size=15,color='#26384b',align='center',weight='normal'){ctx.fillStyle=color;ctx.font=`${weight} ${size}px Arial`;ctx.textAlign=align;ctx.fillText(t,x,y)}
+function roundRect(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke()}}
+function drawBackground(){
+ ctx.clearRect(0,0,900,620);
+ const g=ctx.createLinearGradient(0,0,0,620);g.addColorStop(0,'#f8fbff');g.addColorStop(1,'#eaf2fa');ctx.fillStyle=g;ctx.fillRect(0,0,900,620);
+ // bench
+ roundRect(20,490,860,86,15,'#dce6ef','#c2d0dd');
+ ctx.fillStyle='#c8d5e2';ctx.fillRect(20,490,860,9);
+ text('ЛАБОРАТОРНЫЙ СТОЛ',450,553,12,'#7a8da0');
+ // top labels
+ text('ТЕЛА ДЛЯ ИССЛЕДОВАНИЯ',320,45,15,'#4d6479','center','bold');
+ text('ЭЛЕКТРОННЫЕ ВЕСЫ',220,365,14,'#4d6479','center','bold');
+ text('МЕНЗУРКА · 100 мл',642,160,14,'#4d6479','center','bold');
+}
+function drawScale(){
+ // feet
+ roundRect(scale.x+25,scale.y+92,155,17,6,'#9eacba','#7c8d9c');
+ // body
+ roundRect(scale.x,scale.y,scale.w,scale.h,15,'#d8e1e9','#9baebe');
+ roundRect(scale.x+18,scale.y+12,scale.w-36,38,8,'#f6fafc','#bac7d2');
+ const shown=weighed?objects[selected].mass.toFixed(2):'0.00';
+ roundRect(scale.x+43,scale.y+58,119,34,6,'#172c3a','#0f202b');
+ text(shown,scale.x+102,scale.y+81,24,'#75f2b2','center','bold');text('g',scale.x+175,scale.y+82,13,'#526a7f');
+ text('ZERO',scale.x+42,scale.y+34,9,'#8b9baa');text('ON',scale.x+164,scale.y+34,9,'#8b9baa');
+}
+function liquidY(level){return cyl.y+cyl.h-22-level*2.25}
+function drawCylinder(){
+ // glass body
+ ctx.save();ctx.globalAlpha=.9;
+ ctx.beginPath();ctx.moveTo(cyl.x,cyl.y);ctx.lineTo(cyl.x+7,cyl.y+cyl.h-8);ctx.quadraticCurveTo(cyl.x+10,cyl.y+cyl.h+8,cyl.x+28,cyl.y+cyl.h+8);ctx.lineTo(cyl.x+cyl.w-28,cyl.y+cyl.h+8);ctx.quadraticCurveTo(cyl.x+cyl.w-10,cyl.y+cyl.h+8,cyl.x+cyl.w-7,cyl.y+cyl.h-8);ctx.lineTo(cyl.x+cyl.w,cyl.y);ctx.strokeStyle='#8ca9bd';ctx.lineWidth=4;ctx.stroke();
+ ctx.restore();
+ const level=baseLevel+(immersed?objects[selected].volume:0), y=liquidY(level);
+ ctx.save();ctx.beginPath();ctx.rect(cyl.x+9,y,cyl.w-18,cyl.y+cyl.h-y);ctx.clip();
+ const lg=ctx.createLinearGradient(0,y,0,cyl.y+cyl.h);let color=$('liquidSelect').value==='oil';lg.addColorStop(0,color?'#f6bd5d':'#70c8f2');lg.addColorStop(1,color?'#df8c27':'#2789c9');
+ ctx.fillStyle=lg;ctx.fillRect(cyl.x+9,y,cyl.w-18,cyl.y+cyl.h-y);
+ ctx.beginPath();ctx.ellipse(cyl.x+cyl.w/2,y,cyl.w/2-9,6,0,0,Math.PI*2);ctx.fillStyle=color?'#ffd27e':'#9be0fb';ctx.fill();
+ ctx.restore();
+ // glass glint
+ ctx.strokeStyle='#ffffff';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(cyl.x+18,cyl.y+12);ctx.lineTo(cyl.x+21,cyl.y+cyl.h-28);ctx.stroke();
+ // scale marks 0-100 ml, major 10
+ for(let ml=0;ml<=100;ml+=2){let yy=liquidY(ml);if(yy<cyl.y+2||yy>cyl.y+cyl.h-15)continue;let major=ml%10===0,mid=ml%10===0||ml%5===0;ctx.strokeStyle=major?'#425a70':'#91a7b9';ctx.lineWidth=major?2:1;ctx.beginPath();ctx.moveTo(cyl.x+cyl.w-2,yy);ctx.lineTo(cyl.x+cyl.w-(major?31:mid?21:12),yy);ctx.stroke();if(major)text(String(ml),cyl.x+cyl.w-38,yy+4,11,'#40566b','right');}
+ text(`${level} мл`,cyl.x+cyl.w/2,cyl.y+cyl.h+31,14,'#24577d','center','bold');
+}
+function drawObject(key,x,y,scaleFactor=1){
+ const o=objects[key];ctx.save();ctx.translate(x,y);ctx.scale(scaleFactor,scaleFactor);
+ ctx.shadowColor='#52687a33';ctx.shadowBlur=8;ctx.shadowOffsetY=4;
+ if(o.shape==='block'){
+  ctx.fillStyle=o.color;ctx.beginPath();ctx.moveTo(-29,-25);ctx.lineTo(16,-25);ctx.lineTo(32,-13);ctx.lineTo(-13,-13);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#b96e37';ctx.beginPath();ctx.moveTo(-13,-13);ctx.lineTo(32,-13);ctx.lineTo(32,22);ctx.lineTo(-13,22);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#e2a36b';ctx.beginPath();ctx.moveTo(-29,-25);ctx.lineTo(16,-25);ctx.lineTo(32,-13);ctx.lineTo(-13,-13);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#c98248';ctx.beginPath();ctx.moveTo(-29,-25);ctx.lineTo(-13,-13);ctx.lineTo(-13,22);ctx.lineTo(-29,10);ctx.closePath();ctx.fill();
+ }else if(o.shape==='cylinder'){
+  ctx.fillStyle='#9eacba';ctx.fillRect(-22,-25,44,50);ctx.beginPath();ctx.ellipse(0,-25,22,8,0,0,Math.PI*2);ctx.fillStyle='#dbe3e9';ctx.fill();ctx.strokeStyle='#7e8d9c';ctx.stroke();
+  ctx.beginPath();ctx.ellipse(0,25,22,8,0,0,Math.PI);ctx.strokeStyle='#7e8d9c';ctx.stroke();
+  ctx.strokeStyle='#f7fafc';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-9,-20);ctx.lineTo(-9,17);ctx.stroke();
+ }else{
+  ctx.fillStyle=o.color;ctx.beginPath();ctx.moveTo(-28,-17);ctx.lineTo(-13,-31);ctx.lineTo(4,-24);ctx.lineTo(25,-15);ctx.lineTo(30,5);ctx.lineTo(13,26);ctx.lineTo(-12,22);ctx.lineTo(-29,7);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#8d999f';ctx.beginPath();ctx.moveTo(-13,-31);ctx.lineTo(4,-24);ctx.lineTo(25,-15);ctx.lineTo(8,-5);ctx.lineTo(-4,5);ctx.lineTo(-28,-17);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#56656e';ctx.beginPath();ctx.moveTo(-28,-17);ctx.lineTo(-4,5);ctx.lineTo(-12,22);ctx.lineTo(-29,7);ctx.closePath();ctx.fill();
+ }
+ ctx.restore();
+}
+function draw(){
+ drawBackground();drawScale();drawCylinder();
+ // objects above table, except currently weighed/immersed
+ Object.keys(objects).forEach((key,i)=>{
+  if((weighed||immersed)&&key===selected)return;
+  const p=pos[key];drawObject(key,p.x,p.y,1);
+  text(objects[key].name,p.x,p.y+43,12,'#536b80');
+ });
+ if(weighed&&!immersed)drawObject(selected,scale.x+scale.w/2,scale.y-18,.68);
+ if(immersed){
+  const o=objects[selected], x=cyl.x+cyl.w/2,y=liquidY(baseLevel)+o.volume*1.05;
+  drawObject(selected,x,y,.65);
+ }
+ text('Перетащите тело на весы или в мензурку',450,600,13,'#60758a');
+}
+function setStatus(s){$('status').textContent=s}
+function updateReadouts(){
+ $('massDisplay').textContent=weighed?objects[selected].mass.toFixed(2):'0.00';
+ $('volumeDisplay').textContent=immersed?objects[selected].volume.toFixed(2):'—';
+ $('densityDisplay').textContent=weighed&&immersed?(objects[selected].mass/objects[selected].volume).toFixed(2):'—';
+ $('objectSelect').value=selected;
+}
+function resetExperiment(){
+ weighed=false;immersed=false;measuredLiquid=false;selected=$('objectSelect').value;
+ $('lmass').textContent='—';$('ldensity').textContent='—';$('lvol').textContent='50';
+ setStatus('Опыт сброшен. Перетащите выбранное тело на весы.');
+ updateReadouts();draw();
+}
+$('objectSelect').addEventListener('change',e=>{selected=e.target.value;weighed=false;immersed=false;updateReadouts();setStatus('Выбрано: '+objects[selected].name+'. Сначала измерьте массу.');draw()});
+$('reset').addEventListener('click',resetExperiment);
+$('weigh').addEventListener('click',()=>{weighed=true;immersed=false;updateReadouts();setStatus('Весы измерили массу тела: '+objects[selected].mass+' г.');draw()});
+$('immerse').addEventListener('click',()=>{if(!weighed){setStatus('Сначала измерьте массу тела на весах.');return}immersed=true;updateReadouts();setStatus('Тело полностью погружено. Уровень воды поднялся с 50 до '+(50+objects[selected].volume)+' мл. Объём тела равен разности уровней.');draw()});
+$('remove').addEventListener('click',()=>{weighed=false;immersed=false;updateReadouts();setStatus('Тело убрано. Табло весов показывает 0.00 г.');draw()});
+$('measureLiquid').addEventListener('click',()=>{
+ const oil=$('liquidSelect').value==='oil', density=oil?.80:1.00, mass=50*density;
+ measuredLiquid=true;$('lmass').textContent=mass.toFixed(2);$('lvol').textContent='50';$('ldensity').textContent=density.toFixed(2);
+ setStatus(`Масса 50 мл ${oil?'масла':'воды'} равна ${mass.toFixed(2)} г. Плотность = ${mass.toFixed(2)} / 50 = ${density.toFixed(2)} г/см³.`);draw();
+});
+$('liquidSelect').addEventListener('change',()=>{if(measuredLiquid){measuredLiquid=false;$('lmass').textContent='—';$('ldensity').textContent='—'}draw()});
+$('saveResult').addEventListener('click',()=>{
+ if(!weighed||!immersed){setStatus('Чтобы сохранить результат для твёрдого тела, измерьте массу и объём.');return}
+ const o=objects[selected],v=o.volume,r={name:o.name,mass:o.mass,volume:v,density:o.mass/v};
+ saved.push(r);renderRows();setStatus('Результат добавлен в таблицу.');
+});
+function renderRows(){
+ const rows=saved.map(r=>`<tr><td>${r.name}</td><td>${r.mass.toFixed(2)}</td><td>${r.volume.toFixed(2)}</td><td>${r.density.toFixed(2)}</td></tr>`);
+ if(measuredLiquid){const name=$('liquidSelect').value==='oil'?'Масло':'Вода',m=Number($('lmass').textContent),v=50,d=Number($('ldensity').textContent);rows.push(`<tr><td>${name}</td><td>${m.toFixed(2)}</td><td>${v.toFixed(2)}</td><td>${d.toFixed(2)}</td></tr>`)}
+ $('resultsRows').innerHTML=rows.length?rows.join(''):'<tr><td colspan="4">Пока нет измерений</td></tr>';
+}
+$('saveResult').addEventListener('click',renderRows);
+$('download').addEventListener('click',()=>{
+ const data=[['Объект','Масса, г','Объём, см³','Плотность, г/см³'],...saved.map(r=>[r.name,r.mass.toFixed(2),r.volume.toFixed(2),(r.mass/r.volume).toFixed(2)])];
+ if(measuredLiquid){data.push([$('liquidSelect').value==='oil'?'Масло':'Вода',$('lmass').textContent,'50',$('ldensity').textContent])}
+ const csv='\ufeff'+data.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(';')).join('\r\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='Результаты_плотность.csv';a.click();URL.revokeObjectURL(a.href);
+});
+$('print').addEventListener('click',()=>window.print());
+// Drag objects with mouse or touch; dropping onto scale or cylinder runs the same measurements.
+function pointerPos(e){const r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}}
+canvas.addEventListener('pointerdown',e=>{
+ const p=pointerPos(e);let hit=null;
+ for(const key of Object.keys(objects)){const q=pos[key];if(Math.abs(p.x-q.x)<43&&Math.abs(p.y-q.y)<43)hit=key}
+ if(hit){drag={key:hit,dx:p.x-pos[hit].x,dy:p.y-pos[hit].y};canvas.setPointerCapture(e.pointerId)}
+});
+canvas.addEventListener('pointermove',e=>{if(!drag)return;const p=pointerPos(e);pos[drag.key]={x:p.x-drag.dx,y:p.y-drag.dy};draw()});
+canvas.addEventListener('pointerup',e=>{
+ if(!drag)return;const key=drag.key,p=pos[key];
+ if(p.x>scale.x-20&&p.x<scale.x+scale.w+20&&p.y>scale.y-40&&p.y<scale.y+scale.h+20){selected=key;weighed=true;immersed=false;setStatus('Масса измерена: '+objects[key].mass+' г.');}
+ else if(p.x>cyl.x-30&&p.x<cyl.x+cyl.w+30&&p.y>cyl.y-20&&p.y<cyl.y+cyl.h+25){selected=key;weighed=true;immersed=true;setStatus('Тело погружено: уровень поднялся до '+(baseLevel+objects[key].volume)+' мл. Масса '+objects[key].mass+' г.');}
+ else {pos[key]={x:Math.max(50,Math.min(850,p.x)),y:Math.max(80,Math.min(450,p.y))};if(key===selected){weighed=false;immersed=false}}
+ drag=null;updateReadouts();draw();
+});
+function resize(){draw()}
+window.addEventListener('resize',resize);
+updateReadouts();draw();
+})();
+</script>
+</body>
+</html>
